@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,11 +24,17 @@ import uk.gov.justice.digital.hmpps.educationemploymentapi.data.ReadinessProfile
 import uk.gov.justice.digital.hmpps.educationemploymentapi.data.ReadinessProfileRequestDTO
 import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.ActionTodo
 import uk.gov.justice.digital.hmpps.educationemploymentapi.service.ProfileService
+import javax.validation.ConstraintViolation
+import javax.validation.ConstraintViolationException
+import javax.validation.ValidationException
+import javax.validation.Validator
 
+@Validated
 @RestController
 @RequestMapping("/readiness-profiles", produces = [MediaType.APPLICATION_JSON_VALUE])
 class ProfileResource(
-  private val profileService: ProfileService
+  private val profileService: ProfileService,
+  private val validator: Validator
 ) {
   @PreAuthorize("hasRole('ROLE_VIEW_PRISONER_DATA')")
   @PostMapping("/search")
@@ -61,6 +68,9 @@ class ProfileResource(
     @Schema(description = "List of offender Ids", example = "[\"A1234BC\", \"B1234DE\"]", required = true)
     @RequestBody offenderIds: List<String>
   ): List<ReadinessProfileDTO> {
+
+    offenderIds.forEach { validateOffenderId(it) }
+
     val profiles = ArrayList<ReadinessProfileDTO>()
     profileService.getProfilesForOffenders(offenderIds).collect {
       profiles.add(ReadinessProfileDTO(it))
@@ -100,7 +110,20 @@ class ProfileResource(
     @PathVariable offenderId: String,
     @RequestBody requestDTO: ReadinessProfileRequestDTO,
     @AuthenticationPrincipal oauth2User: String
-  ): ReadinessProfileDTO = ReadinessProfileDTO(profileService.createProfileForOffender(oauth2User, offenderId, requestDTO.bookingId, requestDTO.profileData))
+  ): ReadinessProfileDTO {
+
+    validateOffenderId(offenderId)
+    validateReadinessProfileRequest(requestDTO)
+
+    return ReadinessProfileDTO(
+      profileService.createProfileForOffender(
+        oauth2User,
+        offenderId,
+        requestDTO.bookingId,
+        requestDTO.profileData
+      )
+    )
+  }
 
   @PreAuthorize("hasRole('ROLE_VIEW_PRISONER_DATA')")
   @PutMapping("/{offenderId}")
@@ -134,7 +157,20 @@ class ProfileResource(
     @PathVariable offenderId: String,
     @RequestBody @Parameter requestDTO: ReadinessProfileRequestDTO,
     @AuthenticationPrincipal oauth2User: String
-  ): ReadinessProfileDTO = ReadinessProfileDTO(profileService.updateProfileForOffender(oauth2User, offenderId, requestDTO.bookingId, requestDTO.profileData))
+  ): ReadinessProfileDTO {
+
+    validateOffenderId(offenderId)
+    validateReadinessProfileRequest(requestDTO)
+
+    return ReadinessProfileDTO(
+      profileService.updateProfileForOffender(
+        oauth2User,
+        offenderId,
+        requestDTO.bookingId,
+        requestDTO.profileData
+      )
+    )
+  }
 
   @PreAuthorize("hasRole('ROLE_VIEW_PRISONER_DATA')")
   @GetMapping("/{offenderId}")
@@ -167,7 +203,12 @@ class ProfileResource(
   suspend fun getOffenderProfile(
     @Schema(description = "offenderId", example = "A1234BC", required = true)
     @PathVariable offenderId: String
-  ): ReadinessProfileDTO = ReadinessProfileDTO(profileService.getProfileForOffender(offenderId))
+  ): ReadinessProfileDTO {
+
+    validateOffenderId(offenderId)
+
+    return ReadinessProfileDTO(profileService.getProfileForOffender(offenderId))
+  }
 
   @PreAuthorize("hasRole('ROLE_VIEW_PRISONER_DATA')")
   @PostMapping("/{offenderId}/notes/{attribute}")
@@ -204,7 +245,15 @@ class ProfileResource(
     @PathVariable attribute: ActionTodo,
     @RequestBody requestDTO: NoteRequestDTO,
     @AuthenticationPrincipal oauth2User: String
-  ): List<NoteDTO> = profileService.addProfileNoteForOffender(oauth2User, offenderId, attribute, requestDTO.text).map { note -> NoteDTO(note) }
+  ): List<NoteDTO> {
+
+    validateOffenderId(offenderId)
+
+    // TODO: validate the NoteRequestDTO - field length
+
+    return profileService.addProfileNoteForOffender(oauth2User, offenderId, attribute, requestDTO.text)
+      .map { note -> NoteDTO(note) }
+  }
 
   @PreAuthorize("hasRole('ROLE_VIEW_PRISONER_DATA')")
   @GetMapping("/{offenderId}/notes/{attribute}")
@@ -240,5 +289,23 @@ class ProfileResource(
     @PathVariable offenderId: String,
     @Schema(description = "attribute", example = "DISCLOSURE_LETTER", required = true)
     @PathVariable attribute: ActionTodo
-  ): List<NoteDTO> = profileService.getProfileNotesForOffender(offenderId, attribute).map { note -> NoteDTO(note) }
+  ): List<NoteDTO> {
+
+    validateOffenderId(offenderId)
+
+    return profileService.getProfileNotesForOffender(offenderId, attribute).map { note -> NoteDTO(note) }
+  }
+
+  private fun validateOffenderId(offenderId: String) {
+    if (!offenderId.matches(Regex("^[A-Z]\\d{4}[A-Z]{2}\$"))) {
+      throw ValidationException("OffenderId provided ($offenderId) does not match pattern ie 'A1111AA'")
+    }
+  }
+
+  private fun validateReadinessProfileRequest(requestDTO: ReadinessProfileRequestDTO) {
+    val violations: Set<ConstraintViolation<ReadinessProfileRequestDTO>> = validator.validate(requestDTO)
+    if (violations.isNotEmpty()) {
+      throw ConstraintViolationException(violations)
+    }
+  }
 }
