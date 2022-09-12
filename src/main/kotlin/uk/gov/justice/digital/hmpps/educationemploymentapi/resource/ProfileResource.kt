@@ -28,6 +28,7 @@ import javax.validation.ConstraintViolation
 import javax.validation.ConstraintViolationException
 import javax.validation.ValidationException
 import javax.validation.Validator
+import javax.validation.constraints.Pattern
 
 @Validated
 @RestController
@@ -154,6 +155,7 @@ class ProfileResource(
     ]
   )
   suspend fun updateOffenderProfile(
+    @Pattern(regexp = "[A-Za-z]+", message = "offenderId Pattern Validation Message")
     @PathVariable offenderId: String,
     @RequestBody @Parameter requestDTO: ReadinessProfileRequestDTO,
     @AuthenticationPrincipal oauth2User: String
@@ -202,6 +204,7 @@ class ProfileResource(
   )
   suspend fun getOffenderProfile(
     @Schema(description = "offenderId", example = "A1234BC", required = true)
+    @Pattern(regexp = "[A-Za-z]+", message = "offenderId Pattern Validation Message")
     @PathVariable offenderId: String
   ): ReadinessProfileDTO {
 
@@ -286,6 +289,7 @@ class ProfileResource(
   )
   suspend fun getOffenderProfileNotes(
     @Schema(description = "offenderId", example = "A1234BC", required = true)
+    @Pattern(regexp = "[A-Za-z]+", message = "offenderId Pattern Validation Message")
     @PathVariable offenderId: String,
     @Schema(description = "attribute", example = "DISCLOSURE_LETTER", required = true)
     @PathVariable attribute: ActionTodo

@@ -52,7 +52,7 @@ class ReadinessProfile(
     modifiedBy = userId,
     modifiedDateTime = LocalDateTime.now(),
     schemaVersion = "1.0.0",
-    profileData = Json.of(CapturedSpringMapperConfiguration.OBJECT_MAPPER.writeValueAsString(profile)),
+    profileData = Json.of(CapturedSpringMapperConfiguration.OBJECT_MAPPER?.writeValueAsString(profile)!!),
     notesData = Json.of("[]"),
     new = isNew
   )

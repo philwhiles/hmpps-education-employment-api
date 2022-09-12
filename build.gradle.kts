@@ -22,6 +22,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
   implementation("org.springframework.boot:spring-boot-starter-security")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.hibernate.validator:hibernate-validator")
   implementation("org.springdoc:springdoc-openapi-webflux-ui:1.6.9")
@@ -32,8 +33,14 @@ dependencies {
   implementation("io.jsonwebtoken:jjwt:0.9.1")
   implementation("io.opentelemetry:opentelemetry-api:1.16.0")
   implementation("io.r2dbc:r2dbc-postgresql:0.8.12.RELEASE")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
   runtimeOnly("org.postgresql:r2dbc-postgresql:1.0.0.RC1")
+  testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
+  testImplementation("io.mockk:mockk:1.12.7")
   implementation("org.flywaydb:flyway-core:8.5.12")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.3")
+  testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.3")
+
   runtimeOnly("org.postgresql:postgresql")
 }
 

@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.educationemploymentapi.config
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.context.annotation.Configuration
 
 /**
@@ -8,12 +11,18 @@ import org.springframework.context.annotation.Configuration
  * data classes etc may use it as they cannot have it auto injected
  */
 @Configuration
-class CapturedSpringMapperConfiguration(private val objectMapper: ObjectMapper) {
+class CapturedSpringMapperConfiguration {
   companion object {
-    lateinit var OBJECT_MAPPER: ObjectMapper
-  }
+    var OBJECT_MAPPER: ObjectMapper? = this.getObjectMapper()
+    fun getObjectMapper(): ObjectMapper {
+      return OBJECT_MAPPER ?: configObjectMapper()
+    }
 
-  init {
-    OBJECT_MAPPER = objectMapper
+    fun configObjectMapper(): ObjectMapper {
+      val mapper = ObjectMapper()
+      mapper.registerModule(JavaTimeModule())
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      return mapper.registerKotlinModule()
+    }
   }
 }
