@@ -143,7 +143,6 @@ class ProfileServiceTest {
       runBlocking {
         whenever(readinessProfileRepository.save(any())).thenReturn(readinessProfile)
         whenever(readinessProfileRepository.findById(any())).thenReturn(null)
-
         profileService.updateProfileForOffender(createdBy, newOffenderId, newBookingId, profile)
       }
     }.withMessageContaining("Readiness profile does not exist for offender")
@@ -153,10 +152,8 @@ class ProfileServiceTest {
   fun `throws an exception when a call is made to the repository to add a note to an non existing readiness profile`() {
     assertThatExceptionOfType(NotFoundException::class.java).isThrownBy {
       runBlocking {
-//        whenever(readinessProfileRepository.save(any())).thenReturn(readinessProfile)
         whenever(readinessProfileRepository.findById(any())).thenReturn(null)
-
-        val rProfile = profileService.addProfileNoteForOffender(createdBy, newOffenderId, ActionTodo.BANK_ACCOUNT, newNotes)
+        profileService.addProfileNoteForOffender(createdBy, newOffenderId, ActionTodo.BANK_ACCOUNT, newNotes)
       }
     }.withMessageContaining("Readiness profile does not exist for offender")
   }
