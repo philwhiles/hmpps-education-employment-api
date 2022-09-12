@@ -39,6 +39,6 @@ data class ReadinessProfileDTO(
     modifiedBy = profileEntity.modifiedBy,
     modifiedDateTime = profileEntity.modifiedDateTime,
     schemaVersion = profileEntity.schemaVersion,
-    profileData = CapturedSpringMapperConfiguration.OBJECT_MAPPER?.readValue(profileEntity.profileData.asString(), Profile::class.java)!!
+    profileData = CapturedSpringMapperConfiguration.OBJECT_MAPPER.readValue(profileEntity.profileData.asString(), Profile::class.java)
   )
 }

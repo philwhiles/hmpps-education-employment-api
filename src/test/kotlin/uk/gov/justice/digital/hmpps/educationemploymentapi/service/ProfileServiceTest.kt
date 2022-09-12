@@ -13,7 +13,22 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.educationemploymentapi.config.AlreadyExistsException
 import uk.gov.justice.digital.hmpps.educationemploymentapi.config.NotFoundException
-import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.*
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.AbilityToWorkImpactedBy
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.Action
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.ActionStatus
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.ActionTodo
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.ActionsRequired
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.CircumstanceChangesRequiredToWork
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.Profile
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.ProfileStatus
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.QualificationsAndTraining
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.SupportAccepted
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.SupportDeclined
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.SupportToWorkDeclinedReason
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.WorkExperience
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.WorkImpacts
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.WorkInterests
+import uk.gov.justice.digital.hmpps.educationemploymentapi.data.jsonprofile.WorkTypesOfInterest
 import uk.gov.justice.digital.hmpps.educationemploymentapi.persistence.model.ReadinessProfile
 import uk.gov.justice.digital.hmpps.educationemploymentapi.persistence.repository.ReadinessProfileRespository
 import java.time.LocalDateTime
@@ -105,7 +120,7 @@ class ProfileServiceTest {
         whenever(readinessProfileRepository.save(any())).thenReturn(readinessProfile)
         whenever(readinessProfileRepository.existsById(any())).thenReturn(booleanTrue)
 
-        val rProfile = profileService.createProfileForOffender(createdBy, newOffenderId, newBookingId, profile)
+        profileService.createProfileForOffender(createdBy, newOffenderId, newBookingId, profile)
       }
     }.withMessageContaining("Readiness profile already exists for offender")
   }
@@ -129,7 +144,7 @@ class ProfileServiceTest {
         whenever(readinessProfileRepository.save(any())).thenReturn(readinessProfile)
         whenever(readinessProfileRepository.findById(any())).thenReturn(null)
 
-        val rProfile = profileService.updateProfileForOffender(createdBy, newOffenderId, newBookingId, profile)
+        profileService.updateProfileForOffender(createdBy, newOffenderId, newBookingId, profile)
       }
     }.withMessageContaining("Readiness profile does not exist for offender")
   }
@@ -150,7 +165,7 @@ class ProfileServiceTest {
     assertThatExceptionOfType(NotFoundException::class.java).isThrownBy {
       runBlocking {
         whenever(readinessProfileRepository.findById(any())).thenReturn(null)
-        val rProfile = profileService.getProfileNotesForOffender(createdBy, ActionTodo.BANK_ACCOUNT)
+        profileService.getProfileNotesForOffender(createdBy, ActionTodo.BANK_ACCOUNT)
       }
     }.withMessageContaining("Readiness profile does not exist for offender")
   }

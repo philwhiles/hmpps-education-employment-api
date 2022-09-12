@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class CapturedSpringMapperConfiguration {
   companion object {
-    var OBJECT_MAPPER: ObjectMapper? = this.getObjectMapper()
-    fun getObjectMapper(): ObjectMapper {
-      return OBJECT_MAPPER ?: configObjectMapper()
-    }
+    var OBJECT_MAPPER: ObjectMapper = this.configObjectMapper()
+    /*fun getObjectMapper(): ObjectMapper {
+      return OBJECT_MAPPER : configObjectMapper()
+    }*/
 
     fun configObjectMapper(): ObjectMapper {
       val mapper = ObjectMapper()
